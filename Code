@@ -1,0 +1,37 @@
+import pandas as pd                                                    #To import and use the library pandas
+from sklearn import svm                                                #From scikit importing support vector machine and its functions
+from sklearn.feature_extraction.text import CountVectorizer            #Convert a collection of text documents to a matrix of token counts
+from sklearn.model_selection import GridSearchCV                       #Exhaustive search over specified parameter values for an estimator; members: fit, predict.
+
+from google.colab import files                                         #To import the dataset files in Google colab(only spam.csv here)
+uploaded=files.upload()
+
+dataframe = pd.read_csv("spam.csv")                                    #This is used to load and read the dataset spam.csv
+print(dataframe.describe())
+
+from google.colab import files                                         #To import the remaining dataset files in Google colab(span detection)
+uploaded=files.upload()
+ 
+x = dataframe["EmailText"]                                             #Splitting the dataset for training and testing is done in this segment of code
+y = dataframe["Label"]
+
+x_train, y_train = x[0:4457], y[0:4457];                               #Training the data in x and y parameters
+x_test, y_test = x[4457:],y[4457:];
+
+
+cv = CountVectorizer()                                                 #Here feature extraction takes place
+features = cv.fit_transform(x_train)
+
+
+tuned_parameters = {'kernel': ['rbf','linear'], 'gamma': [1e-3, 1e-4 ], 'C': [1, 10, 100, 1000]}   #Building the model for classification
+
+model = GridSearchCV(svm.SVC(), tuned_parameters)                     #Tuning our model 
+
+model.fit(features,y_train)
+
+print(model.best_params_)                                            #Printing the best parameters after tuning and training 
+
+print(model.score(cv.transform(x_test),y_test))
+
+features_test=cv.transform(x_test)                                   #Cheching and calculating the accuracy of our model
+print("Accuracy of the model is: ",model.score(features_test,y_test))
